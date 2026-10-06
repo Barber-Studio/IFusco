@@ -125,7 +125,6 @@ function route() {
   $$("[data-nav]").forEach((a) => a.classList.toggle("on", a.dataset.nav === v));
   window.scrollTo(0, 0);
   ({ book: renderBook, appointments: renderAppointments, profile: renderProfile, agenda: renderAgenda }[v] || (() => {}))();
-  reveal();
 }
 
 /* ---------- servizi / home ---------- */
@@ -380,7 +379,15 @@ function initMotion(){ /* interfaccia volutamente statica: nessuna animazione in
 /* ---------- avvio ---------- */
 async function init() {
   bindEvents(); initMotion();
-  const { data: { session } } = await db.auth.getSession();
+  // Il popup iniziale deve comparire anche se Supabase non e' ancora configurato.
+  if (!state.user) setTimeout(() => { if (!$("#authDlg").open) openAuth("login"); }, 180);
+  let session = null;
+  try {
+    const result = await db.auth.getSession();
+    session = result?.data?.session || null;
+  } catch (e) {
+    console.warn("Supabase non configurato: modalita' anteprima attiva.", e);
+  }
   await applySession(session);
   db.auth.onAuthStateChange((evt, s) => {
     if (evt === "INITIAL_SESSION") return;
@@ -388,7 +395,6 @@ async function init() {
   });
   await loadServices();
   route();
-  if(!state.user) setTimeout(()=>openAuth("login"),250);
   // ogni minuto: gli slot appena passati si disattivano e l'agenda si aggiorna
   setInterval(() => {
     const v = currentView(), b = state.book;
