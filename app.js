@@ -8,7 +8,7 @@ const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => [...r.querySelectorAll(s)];
 const state = {
   user: null, profile: null, services: [], customers: null,
-  book: { service: null, date: null, time: null, staff: null, busy: [], month: new Date(new Date().getFullYear(), new Date().getMonth(), 1) },
+  book: { service: null, date: null, time: null, staff: null, busy: [] },
   agDate: ymd(new Date()), ag: { appts: [], blocks: [] },
 };
 
@@ -74,8 +74,6 @@ function setAuthMode(mode) {
   $("#authDlg").classList.toggle("register", reg);
   $$("#authDlg [data-tab]").forEach((b) => b.classList.toggle("on", b.dataset.tab === mode));
   $("#authSubmit").textContent = reg ? "Crea account" : "Accedi";
-  $("#authTitle").textContent = reg ? "Crea il tuo account." : "Bentornato.";
-  $(".auth-subtitle").textContent = reg ? "Registrati per prenotare e gestire i tuoi appuntamenti." : "Accedi per prenotare e gestire i tuoi appuntamenti.";
 }
 async function submitAuth(e) {
   e.preventDefault();
@@ -120,11 +118,13 @@ function currentView() { return $("[data-view]:not([hidden])")?.dataset.view; }
 function route() {
   let v = location.hash.slice(1);
   if (!VIEWS.includes(v)) v = "home";
-  // Tutte le sezioni restano navigabili senza account; l'accesso viene richiesto solo quando serve.
-  $$("[data-view]").forEach((s) => (s.hidden = s.dataset.view !== v));
-  $$("[data-nav]").forEach((a) => a.classList.toggle("on", a.dataset.nav === v));
+  $$(`[data-view]`).forEach((section) => { section.hidden = section.dataset.view !== v; });
+  $$(`[data-nav]`).forEach((a) => a.classList.toggle("on", a.dataset.nav === v));
   window.scrollTo(0, 0);
-  ({ book: renderBook, appointments: renderAppointments, profile: renderProfile, agenda: renderAgenda }[v] || (() => {}))();
+  if (v === "profile") renderProfile();
+  if (v === "appointments") renderAppointments();
+  if (v === "book") renderBook();
+  if (v === "agenda") renderAgenda();
 }
 
 /* ---------- servizi / home ---------- */
@@ -142,10 +142,25 @@ async function loadServices() {
 }
 
 /* ---------- prenotazione cliente ---------- */
-function bookingLimit(){const d=new Date();d.setDate(d.getDate()+CONFIG.BOOKING_DAYS_AHEAD);return d;}
-function renderBookCalendar(){const b=state.book,base=b.month,first=new Date(base.getFullYear(),base.getMonth(),1),last=new Date(base.getFullYear(),base.getMonth()+1,0);const start=(first.getDay()+6)%7,today=new Date();today.setHours(0,0,0,0),max=bookingLimit();max.setHours(23,59,59,999);$("#calTitle").textContent=first.toLocaleDateString("it-IT",{month:"long",year:"numeric"});const prev=new Date(base.getFullYear(),base.getMonth()-1,1),next=new Date(base.getFullYear(),base.getMonth()+1,1);$("#calPrev").disabled=prev<new Date(today.getFullYear(),today.getMonth(),1);$("#calNext").disabled=next>new Date(max.getFullYear(),max.getMonth(),1);const cells=[];for(let i=0;i<start;i++)cells.push('<button class="cal-day empty" type="button" tabindex="-1"></button>');for(let day=1;day<=last.getDate();day++){const d=new Date(base.getFullYear(),base.getMonth(),day),key=ymd(d),closed=!CONFIG.OPEN_DAYS.includes(d.getDay()),outside=d<today||d>max,selected=b.date===key,cls=['cal-day',closed?'closed':'available',outside?'outside':'',selected?'selected':'',key===ymd(today)?'today':''].filter(Boolean).join(' ');cells.push(`<button type="button" class="${cls}" data-date="${key}" ${closed||outside?'disabled':''}>${day}</button>`)}$("#bookCalendarGrid").innerHTML=cells.join('');}
-function renderBook(){const b=state.book;$("#bookServices").innerHTML=state.services.map(s=>`<button class="pick" data-service="${s.id}" aria-pressed="${b.service===s.id}"><span>${esc(s.name)}<small>${s.duration_min} min · ${esc(s.description||'')}</small></span><b>${euro(s.price)}</b></button>`).join('');renderBookCalendar();loadSlots();}
-
+function openDays() {
+  const now = new Date(), out = [];
+  for (let i = 0; i <= CONFIG.BOOKING_DAYS_AHEAD; i++) {
+    const d = new Date(now.getFullYear(), now.getMonth(), now.getDate() + i);
+    if (CONFIG.OPEN_DAYS.includes(d.getDay())) out.push(d);
+  }
+  return out;
+}
+function renderBook() {
+  const b = state.book;
+  $("#bookServices").innerHTML = state.services.map((s) => `
+    <button class="pick" data-service="${s.id}" aria-pressed="${b.service === s.id}">
+      <span>${esc(s.name)}<small>${s.duration_min} min</small></span><b>${euro(s.price)}</b></button>`).join("");
+  $("#bookDays").innerHTML = openDays().map((d) => `
+    <button class="day" data-date="${ymd(d)}" aria-pressed="${b.date === ymd(d)}">
+      <small>${d.toLocaleDateString("it-IT", { weekday: "short" })}</small><b>${d.getDate()}</b>
+      <small>${d.toLocaleDateString("it-IT", { month: "short" })}</small></button>`).join("");
+  loadSlots();
+}
 async function loadSlots() {
   const b = state.book, box = $("#bookSlots");
   b.time = null; b.staff = null; updateSummary();
@@ -187,8 +202,30 @@ async function confirmBooking() {
 
 /* ---------- profilo cliente ---------- */
 const STATUS = { confirmed: "Confermato", completed: "Completato", cancelled: "Annullato" };
-function renderProfile(){const guest=$("#profileGuest"),content=$("#profileContent");guest.hidden=!!state.user;content.hidden=!state.user;if(!state.user)return;const f=$("#profileForm").elements,p=state.profile||{};f.nome.value=p.nome||"";f.cognome.value=p.cognome||"";f.telefono.value=p.telefono||"";db.from("notifications").select("*").order("created_at",{ascending:false}).limit(8).then(({data})=>{$("#notifList").innerHTML=(data||[]).map(n=>`<li><div><b>${esc(n.title)}</b><small>${esc(n.body)}</small></div></li>`).join("")||'<li class="muted">Nessuna notifica.</li>'});}
-async function renderAppointments(){const guest=$("#appointmentsGuest"),content=$("#appointmentsContent");guest.hidden=!!state.user;content.hidden=!state.user;if(!state.user)return;const {data:ap}=await db.from("appointments").select("*, services(name)").eq("user_id",state.user.id).order("appointment_date",{ascending:false}).order("start_time",{ascending:false});const future=a=>a.status==="confirmed"&&new Date(`${a.appointment_date}T${hhmm(a.start_time)}:00`)>=new Date();const item=a=>`<li><div><b>${esc(a.services?.name)}</b><small>${fmtDay(a.appointment_date)} · ${hhmm(a.start_time)}</small></div><div><span class="status ${a.status}">${STATUS[a.status]}</span>${future(a)?`<button class="link" data-cancel="${a.id}">Annulla</button>`:""}</div></li>`;const list=ap||[];$("#apNext").innerHTML=list.filter(future).reverse().map(item).join("")||'<li class="muted">Nessun appuntamento in programma.</li>';$("#apPast").innerHTML=list.filter(a=>!future(a)).map(item).join("")||'<li class="muted">Ancora nessuno storico.</li>';}
+function renderProfile() {
+  const guest = $("#profileGuest"), priv = $("#profilePrivate");
+  if (!state.user) { guest.hidden = false; priv.hidden = true; return; }
+  guest.hidden = true; priv.hidden = false;
+  const f = $("#profileForm").elements, p = state.profile || {};
+  f.nome.value = p.nome || ""; f.cognome.value = p.cognome || ""; f.telefono.value = p.telefono || "";
+  db.from("notifications").select("*").order("created_at", { ascending: false }).limit(8).then(({ data }) => {
+    $("#notifList").innerHTML = (data || []).map((n) => `<li><div><b>${esc(n.title)}</b><small>${esc(n.body)}</small></div></li>`).join("");
+  }).catch(()=>{});
+}
+
+async function renderAppointments() {
+  const guest = $("#appointmentsGuest"), priv = $("#appointmentsPrivate");
+  if (!state.user) { guest.hidden = false; priv.hidden = true; return; }
+  guest.hidden = true; priv.hidden = false;
+  const { data: ap } = await db.from("appointments").select("*, services(name)").eq("user_id", state.user.id)
+    .order("appointment_date", { ascending: false }).order("start_time", { ascending: false });
+  const future = (a) => a.status === "confirmed" && new Date(`${a.appointment_date}T${hhmm(a.start_time)}:00`) >= new Date();
+  const item = (a) => `<li><div><b>${esc(a.services?.name)}</b><small>${fmtDay(a.appointment_date)} · ${hhmm(a.start_time)}</small></div><div><span class="status ${a.status}">${STATUS[a.status]}</span>${future(a) ? `<button class="link" data-cancel="${a.id}">Annulla</button>` : ""}</div></li>`;
+  const list = ap || [];
+  $("#apNext").innerHTML = list.filter(future).reverse().map(item).join("") || '<li class="muted">Nessun appuntamento in programma.</li>';
+  $("#apPast").innerHTML = list.filter((a) => !future(a)).map(item).join("") || '<li class="muted">Ancora nessuno storico.</li>';
+}
+
 async function saveProfile(e) {
   e.preventDefault(); const f = e.target.elements;
   const { error } = await db.from("profiles").update({ nome: f.nome.value.trim(), cognome: f.cognome.value.trim() }).eq("id", state.user.id);
@@ -203,26 +240,7 @@ async function cancelOwn(id) {
 }
 
 /* ---------- agenda admin ---------- */
-async function renderPublicAgenda(){
-  $("#publicAgenda").hidden=false;$("#agendaAdmin").hidden=true;
-  const box=$("#publicAgenda");box.innerHTML='<p class="empty-note">Caricamento disponibilità…</p>';
-  const days=[],now=new Date();
-  for(let i=0;i<CONFIG.BOOKING_DAYS_AHEAD;i++){
-    const d=new Date(now.getFullYear(),now.getMonth(),now.getDate()+i);
-    if(!CONFIG.OPEN_DAYS.includes(d.getDay())) continue;
-    const key=ymd(d);
-    let busy=[];
-    if(!state.demo){ const r=await db.rpc("get_busy",{p_date:key}); busy=r.data||[]; }
-    const occ=occupancy(busy);
-    const free=CONFIG.SLOTS.filter(t=>!isPast(key,t)&&freeStaff(occ,t,1)!==null).length;
-    days.push(`<div class="public-day"><div><span class="eyebrow">${fmtDay(key,{weekday:"long",day:"numeric",month:"long"})}</span><b>${free} orari disponibili</b></div><a href="#book" class="secondary-button" data-date="${key}">Scegli questo giorno →</a></div>`);
-  }
-  box.innerHTML=days.join("")||'<p class="empty-note">Nessuna disponibilità.</p>';
-}
-
 async function renderAgenda() {
-  if(!isAdmin()) return renderPublicAgenda();
-  $("#publicAgenda").hidden=true;$("#agendaAdmin").hidden=false;
   const d = state.agDate; $("#agDate").value = d;
   const [ap, bl] = await Promise.all([
     db.from("appointments").select("*, profiles(nome,cognome,telefono), services(name)").eq("appointment_date", d).neq("status", "cancelled"),
@@ -331,75 +349,72 @@ async function unblock(id) {
 /* ---------- eventi ---------- */
 function bindEvents() {
   window.addEventListener("hashchange", route);
-  $("#authForm").addEventListener("submit", submitAuth);
-  $("#profileForm").addEventListener("submit", saveProfile);
-  $("#apptForm").addEventListener("submit", saveAppt);
-  $("#apptCancel").addEventListener("click", cancelAppt);
-  $("#apptBlock").addEventListener("click", blockSlot);
-  $("#bookBtn").addEventListener("click", confirmBooking);
-  $("#calPrev").addEventListener("click",()=>{state.book.month=new Date(state.book.month.getFullYear(),state.book.month.getMonth()-1,1);renderBookCalendar();});
-  $("#calNext").addEventListener("click",()=>{state.book.month=new Date(state.book.month.getFullYear(),state.book.month.getMonth()+1,1);renderBookCalendar();});
-  $("#pushBtn").addEventListener("click", async () => toast((await requestOneSignalNotifications()) ? "Notifiche attivate" : "Notifiche non attivate"));
-  $("#bellBtn").addEventListener("click", () => { state.user ? (location.hash = "#profile", requestOneSignalNotifications()) : openAuth("login"); });
-  $("#logoutBtn").addEventListener("click", async () => { await db.auth.signOut(); location.hash = "#home"; toast("Hai effettuato l'uscita"); });
-  $("#privacyLink").addEventListener("click", (e) => { e.preventDefault(); toast("Aggiungi qui la tua informativa privacy."); });
-  $("#agPrev").addEventListener("click", () => shiftAgenda(-1));
-  $("#agNext").addEventListener("click", () => shiftAgenda(1));
-  $("#agToday").addEventListener("click", () => { state.agDate = ymd(new Date()); renderAgenda(); });
-  $("#agDate").addEventListener("change", (e) => { if (e.target.value) { state.agDate = e.target.value; renderAgenda(); } });
-
-  // deleghe di click
+  $("#authForm")?.addEventListener("submit", submitAuth);
+  $("#profileForm")?.addEventListener("submit", saveProfile);
+  $("#apptForm")?.addEventListener("submit", saveAppt);
+  $("#apptCancel")?.addEventListener("click", cancelAppt);
+  $("#apptBlock")?.addEventListener("click", blockSlot);
+  $("#bookBtn")?.addEventListener("click", confirmBooking);
+  $("#pushBtn")?.addEventListener("click", async () => toast((await requestOneSignalNotifications()) ? "Notifiche attivate" : "Notifiche non attivate"));
+  $("#bellBtn")?.addEventListener("click", () => state.user ? (location.hash = "#profile") : openAuth("login"));
+  $("#logoutBtn")?.addEventListener("click", async () => { try { await db.auth.signOut(); } catch(e){} location.hash = "#home"; toast("Hai effettuato l'uscita"); });
+  $("#agPrev")?.addEventListener("click", () => shiftAgenda(-1));
+  $("#agNext")?.addEventListener("click", () => shiftAgenda(1));
+  $("#agToday")?.addEventListener("click", () => { state.agDate = ymd(new Date()); renderAgenda(); });
+  $("#agDate")?.addEventListener("change", (e) => { if (e.target.value) { state.agDate = e.target.value; renderAgenda(); } });
   document.addEventListener("click", (e) => {
     const t = e.target.closest("button, a"); if (!t) return;
-    if (t.dataset.close !== undefined) t.closest("dialog").close();
-    if (t.dataset.tab) setAuthMode(t.dataset.tab);
+    if (t.dataset.close !== undefined) t.closest("dialog")?.close();
+    if (t.dataset.guestClose !== undefined) t.closest("dialog")?.close();
     if (t.dataset.auth) openAuth(t.dataset.auth);
-    if (t.dataset.scroll) document.getElementById(t.dataset.scroll).scrollIntoView();
+    if (t.dataset.tab) setAuthMode(t.dataset.tab);
+    if (t.dataset.scroll) document.getElementById(t.dataset.scroll)?.scrollIntoView({behavior:"smooth"});
     if (t.dataset.pick) { state.book.service = +t.dataset.pick; location.hash = "#book"; }
     if (t.dataset.cancel) cancelOwn(t.dataset.cancel);
     if (t.dataset.service) { state.book.service = +t.dataset.service; renderBook(); }
-    if (t.dataset.date) { state.book.date = t.dataset.date; const d=parseYmd(t.dataset.date); state.book.month=new Date(d.getFullYear(),d.getMonth(),1); renderBook(); }
-    if (t.dataset.time) {
-      const b = state.book, n = slotsNeeded(svcById(b.service).duration_min);
-      b.time = t.dataset.time; b.staff = freeStaff(occupancy(b.busy), b.time, n);
-      $$("#bookSlots .slot").forEach((s) => s.setAttribute("aria-pressed", s === t));
-      updateSummary();
-    }
-    // agenda
-    const act = t.dataset.act, id = +t.dataset.id;
-    if (act === "appt") openApptDlg(state.ag.appts.find((a) => a.id === id));
-    if (act === "free") openApptDlg(null, { time: t.dataset.t, staff: +t.dataset.s });
-    if (act === "unblock") unblock(id);
+    if (t.dataset.date) { state.book.date = t.dataset.date; renderBook(); }
+    if (t.dataset.time) { const b=state.book,n=slotsNeeded(svcById(b.service).duration_min); b.time=t.dataset.time;b.staff=freeStaff(occupancy(b.busy),b.time,n);$$(`#bookSlots .slot`).forEach(x=>x.setAttribute("aria-pressed",x===t));updateSummary(); }
+    const act=t.dataset.act,id=+t.dataset.id;
+    if(act==="appt" && isAdmin()) openApptDlg(state.ag.appts.find(a=>a.id===id));
+    if(act==="free" && isAdmin()) openApptDlg(null,{time:t.dataset.t,staff:+t.dataset.s});
+    if(act==="unblock" && isAdmin()) unblock(id);
   });
 }
 
-/* ---------- avvio grafico: interfaccia statica ---------- */
-function initMotion(){ /* interfaccia volutamente statica: nessuna animazione introduttiva */ }
+/* ---------- movimento: intro logo, comparsa allo scroll, header ---------- */
+const io = "IntersectionObserver" in window
+  ? new IntersectionObserver((es) => es.forEach((e) => { if (e.isIntersecting) { e.target.classList.add("in"); io.unobserve(e.target); } }), { threshold: 0.12 })
+  : null;
+function reveal() { $$("[data-reveal]:not(.in)").forEach((el) => (io ? io.observe(el) : el.classList.add("in"))); }
+function initMotion() {
+  const sp = $("#splash");
+  setTimeout(() => sp?.remove(), 3300);
+  sp?.addEventListener("click", () => sp.remove());
+  addEventListener("scroll", () => {
+    $(".top").classList.toggle("scrolled", scrollY > 8);
+  }, { passive: true });
+  $(".hero")?.addEventListener("pointermove", (e) => { // luce che segue il mouse
+    const r = e.currentTarget.getBoundingClientRect();
+    e.currentTarget.style.setProperty("--mx", `${e.clientX - r.left}px`);
+    e.currentTarget.style.setProperty("--my", `${e.clientY - r.top}px`);
+  });
+}
 
 /* ---------- avvio ---------- */
 async function init() {
-  bindEvents(); initMotion();
-  // Il popup iniziale deve comparire anche se Supabase non e' ancora configurato.
-  if (!state.user) setTimeout(() => { if (!$("#authDlg").open) openAuth("login"); }, 180);
+  bindEvents();
+  initMotion();
+  // Popup iniziale: appare dopo lo splash, anche se Supabase non risponde.
+  setTimeout(() => { if (!state.user && !$("#authDlg")?.open) openAuth("login"); }, 2600);
   let session = null;
   try {
     const result = await db.auth.getSession();
     session = result?.data?.session || null;
-  } catch (e) {
-    console.warn("Supabase non configurato: modalita' anteprima attiva.", e);
-  }
+  } catch (e) { console.warn("Supabase non raggiungibile, modalità locale attiva", e); }
   await applySession(session);
-  db.auth.onAuthStateChange((evt, s) => {
-    if (evt === "INITIAL_SESSION") return;
-    setTimeout(async () => { await applySession(s); route(); }, 0); // setTimeout evita blocchi nel callback Supabase
-  });
-  await loadServices();
+  try { db.auth.onAuthStateChange((evt, s) => { if (evt === "INITIAL_SESSION") return; setTimeout(async () => { await applySession(s); route(); }, 0); }); } catch(e) {}
+  try { await loadServices(); } catch(e) { state.services = CONFIG.DEMO_SERVICES; }
   route();
-  // ogni minuto: gli slot appena passati si disattivano e l'agenda si aggiorna
-  setInterval(() => {
-    const v = currentView(), b = state.book;
-    if (v === "book" && b.service && b.date && (!b.time || isPast(b.date, b.time))) loadSlots();
-    if (v === "agenda" && !$("dialog[open]")) renderAgenda();
-  }, 60000);
+  setInterval(() => { const v=currentView(),b=state.book;if(v==="book"&&b.service&&b.date&&(!b.time||isPast(b.date,b.time))) loadSlots(); },60000);
 }
 init().catch((e) => { console.error(e); toast("Errore di avvio: controlla la configurazione in supabase.js"); });

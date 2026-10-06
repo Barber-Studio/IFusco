@@ -1,134 +1,226 @@
 <!doctype html>
 <html lang="it">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>I FUSCO · Barbershop</title>
-<meta name="theme-color" content="#080808">
-<link rel="manifest" href="manifest.json">
-<link rel="icon" href="assets/icon-192.png">
-<link rel="apple-touch-icon" href="assets/icon-192.png">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>I FUSCO · Barbershop</title>
+  <meta name="description" content="I FUSCO Barbershop. Taglio, barba e cura su appuntamento. Prenota online.">
+  <meta name="theme-color" content="#000000">
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" href="assets/icon-192.png">
+  <link rel="apple-touch-icon" href="assets/icon-192.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <script>document.documentElement.classList.add("js")</script>
 </head>
 <body>
 
-<header class="site-header">
-  <a class="header-logo" href="#home" aria-label="I FUSCO"><img src="assets/logo-white.png" alt="I FUSCO"></a>
-  <nav class="desktop-nav" aria-label="Navigazione principale">
+<!-- ============ INTRO LOGO ============ -->
+<div class="splash" id="splash" aria-hidden="true"><div class="splash-in"><img class="splash-logo" src="assets/logo-white.png" alt=""><span class="splash-line"></span></div></div>
+
+<!-- ============ HEADER ============ -->
+<header class="top">
+  <a href="#home" class="brand" aria-label="I FUSCO"><img src="assets/logo-white.png" alt="I FUSCO"></a>
+  <nav class="top-nav" aria-label="Principale">
     <a href="#home" data-nav="home">Home</a>
     <a href="#book" data-nav="book">Prenota</a>
     <a href="#appointments" data-nav="appointments">Prenotazioni</a>
     <a href="#agenda" data-nav="agenda">Agenda</a>
     <a href="#profile" data-nav="profile">Profilo</a>
   </nav>
-  <div class="header-right">
-    <button class="round-button" id="bellBtn" aria-label="Notifiche"><svg viewBox="0 0 24 24"><path d="M6 17h12l-1.5-2v-4a4.5 4.5 0 0 0-9 0v4L6 17Z"/><path d="M10 20h4"/></svg></button>
-    <a class="header-book" href="#book">Prenota</a>
+  <div class="top-actions">
+    <button class="icon-btn" id="bellBtn" aria-label="Notifiche">
+      <svg viewBox="0 0 24 24"><path d="M6 16v-5a6 6 0 1 1 12 0v5l2 2H4zM10 21h4"/></svg>
+    </button>
+    <a href="#book" class="btn btn-black btn-sm top-cta">Prenota</a>
   </div>
 </header>
 
 <main>
-  <!-- HOME -->
-  <section data-view="home">
-    <div class="home-clean">
-      <div class="home-brand">
-        <span class="eyebrow">I FUSCO · BARBERSHOP</span>
-        <h1>Il tuo stile.<br><em>La tua scelta.</em></h1>
-        <a class="primary-button home-book" href="#book">Prenota ora</a>
+
+<!-- ============ HOME ============ -->
+<section data-view="home">
+  <div class="home-clean">
+    <div class="home-center">
+      <img src="assets/logo-white.png" class="home-logo" alt="I FUSCO">
+      <a href="#book" class="btn btn-black home-book">Prenota ora</a>
+    </div>
+  </div>
+  <section class="clean-section" id="services">
+    <div class="section-title"><span>SERVIZI</span><h2>I nostri servizi</h2></div>
+    <ul class="service-list" id="homeServices"></ul>
+  </section>
+  <section class="clean-info">
+    <div><span>ORARI</span><b>Martedì — Sabato</b><small>09:00 — 20:30</small></div>
+    <div><span>PRENOTAZIONE</span><b>Online</b><small>Disponibilità aggiornata</small></div>
+    <div><span>CONTATTI</span><b>I FUSCO</b><small>Barbershop</small></div>
+  </section>
+</section>
+
+<!-- ============ PRENOTA ============ -->
+<section data-view="book" hidden>
+  <div class="page">
+    <h2 class="page-title">Prenota</h2>
+
+    <div class="step">
+      <h3>Servizio</h3>
+      <div id="bookServices" class="pick-list"></div>
+    </div>
+
+    <div class="step">
+      <h3>Giorno</h3>
+      <div id="bookDays" class="day-strip"></div>
+    </div>
+
+    <div class="step">
+      <h3>Orario</h3>
+      <div id="bookSlots" class="slot-grid"><p class="muted">Scegli prima servizio e giorno.</p></div>
+      <p class="legend"><i class="lg free"></i>Libero <i class="lg busy"></i>Non disponibile</p>
+    </div>
+
+    <div class="confirm" id="bookConfirm">
+      <p id="bookSummary" class="muted">Nessuna selezione.</p>
+      <button class="btn btn-black btn-block" id="bookBtn" disabled>Conferma prenotazione</button>
+    </div>
+  </div>
+</section>
+
+<!-- ============ AGENDA (solo admin) ============ -->
+<section data-view="agenda" hidden>
+  <div class="page wide">
+    <h2 class="page-title">Agenda</h2>
+    <div class="agenda-bar">
+      <button class="btn btn-line btn-sm" id="agPrev" aria-label="Giorno precedente">‹</button>
+      <input type="date" id="agDate">
+      <button class="btn btn-line btn-sm" id="agNext" aria-label="Giorno successivo">›</button>
+      <button class="btn btn-line btn-sm" id="agToday">Oggi</button>
+    </div>
+    <div class="revenue" id="agRevenue"></div>
+    <div class="agenda-grid" id="agGrid"></div>
+  </div>
+</section>
+
+<!-- ============ PRENOTAZIONI ============ -->
+<section data-view="appointments" hidden>
+  <div class="page">
+    <h2 class="page-title">Prenotazioni</h2>
+    <div class="guest-panel" id="appointmentsGuest" hidden><p>Accedi per vedere le tue prenotazioni.</p><button type="button" class="btn btn-black btn-block" data-auth="login">Accedi / Registrati</button></div>
+    <div id="appointmentsPrivate">
+    <h3 class="sub">Prossimi appuntamenti</h3>
+    <ul class="appt-list" id="apNext"></ul>
+    <a href="#book" class="btn btn-black btn-block" style="margin-top:20px">Nuova prenotazione</a>
+    <h3 class="sub">Storico</h3>
+    <ul class="appt-list" id="apPast"></ul>
+    </div>
+  </div>
+</section>
+
+<!-- ============ PROFILO ============ -->
+<section data-view="profile" hidden>
+  <div class="page">
+    <h2 class="page-title">Profilo</h2>
+    <div class="guest-panel" id="profileGuest" hidden><p>Accedi per gestire il tuo profilo.</p><button type="button" class="btn btn-black btn-block" data-auth="login">Accedi / Registrati</button></div>
+    <div id="profilePrivate">
+    <form id="profileForm" class="form">
+      <div class="row2">
+        <label>Nome<input name="nome" required></label>
+        <label>Cognome<input name="cognome" required></label>
       </div>
+      <label>Telefono<input name="telefono" disabled></label>
+      <button class="btn btn-line">Salva dati</button>
+    </form>
+
+    <h3 class="sub">Notifiche</h3>
+    <button class="btn btn-line" id="pushBtn">Attiva notifiche push</button>
+    <ul class="notif-list" id="notifList"></ul>
+
+    <button class="btn btn-black btn-block logout" id="logoutBtn">Esci dall'account</button>
     </div>
+  </div>
+</section>
 
-    <section class="home-section services-section" id="services-home">
-      <div class="section-head"><div><span class="eyebrow">SERVIZI</span><h2>Scegli il tuo servizio.</h2></div><a href="#book">Prenota →</a></div>
-      <div class="home-services" id="homeServices"></div>
-    </section>
-
-    <section class="home-info">
-      <div><span class="eyebrow">ORARI</span><strong>Martedì — Sabato</strong><span>09:00 — 20:00</span></div>
-      <div><span class="eyebrow">PRENOTAZIONI</span><strong>Online</strong><span>Disponibilità aggiornata in tempo reale</span></div>
-      <div><span class="eyebrow">SEDE</span><strong>I FUSCO</strong><span>Barbershop</span></div>
-    </section>
-
-    <section class="home-final-cta"><h2>Pronto per il prossimo appuntamento?</h2><a class="light-button" href="#book">Prenota ora</a></section>
-  </section>
-
-  <!-- PRENOTA -->
-  <section data-view="book" hidden>
-    <div class="page-wrap booking-page">
-      <div class="page-intro"><span class="eyebrow">PRENOTAZIONE ONLINE</span><h2>Prenota il tuo<br><em>appuntamento.</em></h2><p>Scegli il servizio, il giorno e l'orario. La disponibilità viene aggiornata direttamente dall'agenda.</p></div>
-      <div class="booking-layout">
-        <div class="booking-main">
-          <div class="booking-step"><div class="step-number">01</div><div><span class="step-label">Servizio</span><h3>Scegli il servizio</h3></div></div>
-          <div id="bookServices" class="booking-services"></div>
-
-          <div class="booking-step calendar-step"><div class="step-number">02</div><div><span class="step-label">Giorno</span><h3>Scegli il giorno</h3></div></div>
-          <div class="calendar-card" id="bookCalendar">
-            <div class="calendar-top"><button id="calPrev" type="button" aria-label="Mese precedente">‹</button><h3 id="calTitle">Calendario</h3><button id="calNext" type="button" aria-label="Mese successivo">›</button></div>
-            <div class="weekdays"><span>Lun</span><span>Mar</span><span>Mer</span><span>Gio</span><span>Ven</span><span>Sab</span><span>Dom</span></div>
-            <div class="calendar-grid" id="bookCalendarGrid"></div>
-          </div>
-
-          <div class="booking-step"><div class="step-number">03</div><div><span class="step-label">Orario</span><h3>Scegli l'orario</h3></div></div>
-          <div id="bookSlots" class="slots"><p class="empty-note">Seleziona prima un servizio e un giorno.</p></div>
-        </div>
-        <aside class="booking-summary"><span class="eyebrow">RIEPILOGO</span><h3>Il tuo appuntamento</h3><div id="bookSummary" class="summary-text">Nessuna selezione.</div><button class="primary-button full" id="bookBtn" disabled>Conferma prenotazione</button><p>La conferma richiede l'accesso o la registrazione.</p></aside>
-      </div>
-    </div>
-  </section>
-
-  <!-- PRENOTAZIONI -->
-  <section data-view="appointments" hidden>
-    <div class="page-wrap narrow"><div class="page-intro"><span class="eyebrow">AREA PERSONALE</span><h2>Le tue<br><em>prenotazioni.</em></h2><p>Gestisci i prossimi appuntamenti e lo storico.</p></div>
-      <div id="appointmentsGuest" class="account-card" hidden><div class="account-icon">01</div><h3>Accedi al tuo spazio</h3><p>Per vedere le prenotazioni devi accedere o creare gratuitamente il tuo account.</p><button class="primary-button" data-auth="login">Accedi / Registrati</button></div>
-      <div id="appointmentsContent" hidden><div class="list-block"><div class="list-title">Prossimi appuntamenti</div><ul class="appt-list" id="apNext"></ul></div><a href="#book" class="secondary-button full-link">+ Nuova prenotazione</a><div class="list-block"><div class="list-title">Storico</div><ul class="appt-list" id="apPast"></ul></div></div>
-    </div>
-  </section>
-
-  <!-- AGENDA -->
-  <section data-view="agenda" hidden>
-    <div class="page-wrap wide"><div class="page-intro"><span class="eyebrow">DISPONIBILITÀ</span><h2>Agenda<br><em>e orari.</em></h2><p>Consulta le disponibilità e scegli direttamente un giorno per prenotare.</p></div>
-      <div id="publicAgenda" class="public-agenda"></div>
-      <div id="agendaAdmin" hidden><div class="agenda-bar"><button class="round-small" id="agPrev">‹</button><input type="date" id="agDate"><button class="round-small" id="agNext">›</button><button class="secondary-button compact" id="agToday">Oggi</button></div><div class="revenue" id="agRevenue"></div><div class="agenda-grid" id="agGrid"></div></div>
-    </div>
-  </section>
-
-  <!-- PROFILO -->
-  <section data-view="profile" hidden>
-    <div class="page-wrap narrow"><div class="page-intro"><span class="eyebrow">IL TUO ACCOUNT</span><h2>Il tuo<br><em>profilo.</em></h2><p>Gestisci i tuoi dati e le notifiche.</p></div>
-      <div id="profileGuest" class="account-card" hidden><div class="account-icon">02</div><h3>Benvenuto</h3><p>Accedi o registrati per avere il tuo profilo personale.</p><button class="primary-button" data-auth="login">Accedi / Registrati</button></div>
-      <div id="profileContent" hidden><form id="profileForm" class="profile-form"><div class="form-row"><label>Nome<input name="nome" required></label><label>Cognome<input name="cognome" required></label></div><label>Telefono<input name="telefono" disabled></label><button class="secondary-button">Salva modifiche</button></form><div class="profile-block"><span class="eyebrow">NOTIFICHE</span><h3>Resta aggiornato</h3><button class="secondary-button" id="pushBtn">Attiva notifiche</button><ul class="notif-list" id="notifList"></ul></div><button class="logout-button" id="logoutBtn">Esci dall'account</button></div>
-    </div>
-  </section>
+<!-- ============ FOOTER ============ -->
+<footer class="foot">
+  <div>
+    <a href="#home" class="brand foot-brand" aria-label="I FUSCO"><img src="assets/logo-white.png" alt="I FUSCO"></a>
+    <p>Via Esempio 1, 00000 Città (modifica in index.html)</p>
+    <p><a href="tel:+390000000000">+39 000 000 0000</a></p>
+  </div>
+  <div>
+    <p><a href="https://instagram.com/" target="_blank" rel="noopener">Instagram</a></p>
+    <p><a href="https://tiktok.com/" target="_blank" rel="noopener">TikTok</a></p>
+    <p><a href="#" id="privacyLink">Privacy</a></p>
+  </div>
+  <p class="legal">© I FUSCO · P.IVA 00000000000 · Inserisci qui le informazioni legali.</p>
+</footer>
 </main>
 
-<footer class="site-footer"><img src="assets/logo-white.png" alt="I FUSCO"><div><span>Martedì — Sabato</span><span>09:00 — 20:30</span></div><div><a href="#book">Prenota</a><a href="#profile">Profilo</a></div><small>© I FUSCO · Barbershop</small></footer>
+<!-- ============ NAVIGAZIONE MOBILE ============ -->
+<nav class="bottom-nav" id="bottomNav" aria-label="Navigazione">
+  <a href="#home" data-nav="home"><svg viewBox="0 0 24 24"><path d="M3 11l9-8 9 8v10h-6v-6H9v6H3z"/></svg>Home</a>
+  <a href="#book" data-nav="book"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>Prenota</a>
+  <a href="#appointments" data-nav="appointments"><svg viewBox="0 0 24 24"><rect x="5" y="4" width="14" height="17"/><path d="M9 4h6v3H9zM9 12h6M9 16h4"/></svg>Prenotazioni</a>
+  <a href="#agenda" data-nav="agenda"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16"/><path d="M3 10h18M10 10v10"/></svg>Agenda</a>
+  <a href="#profile" data-nav="profile"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg>Profilo</a>
+</nav>
 
-<nav class="mobile-nav" aria-label="Navigazione mobile"><a href="#home" data-nav="home"><svg viewBox="0 0 24 24"><path d="M3 11l9-8 9 8v10h-6v-6H9v6H3z"/></svg><span>Home</span></a><a href="#book" data-nav="book"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="17" rx="1"/><path d="M8 2v4M16 2v4M3 9h18"/></svg><span>Prenota</span></a><a href="#appointments" data-nav="appointments"><svg viewBox="0 0 24 24"><rect x="5" y="4" width="14" height="17" rx="1"/><path d="M9 12h6M9 16h4"/></svg><span>Appuntamenti</span></a><a href="#agenda" data-nav="agenda"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="1"/><path d="M3 10h18M9 14h2M13 14h2M9 17h2"/></svg><span>Agenda</span></a><a href="#profile" data-nav="profile"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg><span>Profilo</span></a></nav>
-
-<!-- POPUP INIZIALE / AUTH -->
-<dialog id="authDlg" class="auth-dialog">
- <form id="authForm" class="auth-card" method="dialog">
-  <button type="button" class="dialog-x" data-close aria-label="Chiudi">×</button>
-  <img src="assets/logo-white.png" alt="I FUSCO" class="auth-logo">
-  <span class="eyebrow center">AREA CLIENTI</span>
-  <h2 id="authTitle">Bentornato.</h2>
-  <p class="auth-subtitle">Accedi per prenotare e gestire i tuoi appuntamenti.</p>
-  <div class="auth-tabs"><button type="button" data-tab="login" class="on">Accedi</button><button type="button" data-tab="register">Registrati</button></div>
-  <div class="form-row only-register"><label>Nome<input name="nome" autocomplete="given-name"></label><label>Cognome<input name="cognome" autocomplete="family-name"></label></div>
-  <label>Telefono<input name="telefono" type="tel" inputmode="tel" autocomplete="tel" required></label>
-  <label>PIN <small>(4–6 cifre)</small><input name="pin" type="password" inputmode="numeric" pattern="\d{4,6}" maxlength="6" required></label>
-  <label class="only-register">Conferma PIN<input name="pin2" type="password" inputmode="numeric" pattern="\d{4,6}" maxlength="6"></label>
-  <p class="error" id="authErr"></p><button class="primary-button full" id="authSubmit">Accedi</button>
-  <button type="button" class="continue-button" data-close>Continua senza account</button>
- </form>
+<!-- ============ ACCESSO / REGISTRAZIONE ============ -->
+<dialog id="authDlg">
+  <form id="authForm" class="form" method="dialog">
+    <img class="dlg-logo" src="assets/logo-white.png" alt="I FUSCO">
+    <div class="tabs">
+      <button type="button" data-tab="login" class="on">Accedi</button>
+      <button type="button" data-tab="register">Registrati</button>
+    </div>
+    <div class="row2 only-register">
+      <label>Nome<input name="nome" autocomplete="given-name"></label>
+      <label>Cognome<input name="cognome" autocomplete="family-name"></label>
+    </div>
+    <label>Telefono<input name="telefono" type="tel" inputmode="tel" autocomplete="tel" required></label>
+    <label>PIN (4–6 cifre)<input name="pin" type="password" inputmode="numeric" pattern="\d{4,6}" maxlength="6" autocomplete="current-password" required></label>
+    <label class="only-register">Conferma PIN<input name="pin2" type="password" inputmode="numeric" pattern="\d{4,6}" maxlength="6" autocomplete="new-password"></label>
+    <p class="error" id="authErr" role="alert"></p>
+    <button class="btn btn-black btn-block" id="authSubmit">Accedi</button>
+    <button type="button" class="btn btn-line btn-block" data-guest-close>Continua senza account</button>
+    <button type="button" class="link" data-close>Chiudi</button>
+  </form>
 </dialog>
 
-<dialog id="apptDlg"><form id="apptForm" class="admin-dialog" method="dialog"><h3 id="apptTitle">Prenotazione</h3><label>Cliente registrato<select name="user_id"></select></label><label>Oppure nome cliente<input name="client_name"></label><label>Servizio<select name="service_id" required></select></label><div class="form-row"><label>Data<input type="date" name="appointment_date" required></label><label>Ora<select name="start_time" required></select></label></div><div class="form-row"><label>Fascia<select name="staff"></select></label><label>Stato<select name="status"><option value="confirmed">Confermato</option><option value="completed">Completato</option><option value="cancelled">Annullato</option></select></label></div><label>Nota<input name="note"></label><p class="error" id="apptErr"></p><button class="primary-button full">Salva</button><button type="button" class="secondary-button full" id="apptBlock">Blocca questo slot</button><button type="button" class="secondary-button full" id="apptCancel">Annulla prenotazione</button><button type="button" class="continue-button" data-close>Chiudi</button></form></dialog>
+<!-- ============ MODALE ADMIN: PRENOTAZIONE ============ -->
+<dialog id="apptDlg">
+  <form id="apptForm" class="form" method="dialog">
+    <h3 id="apptTitle">Prenotazione</h3>
+    <label>Cliente registrato<select name="user_id"></select></label>
+    <label>Oppure nome cliente occasionale<input name="client_name" placeholder="Es. Marco (telefono)"></label>
+    <label>Servizio<select name="service_id" required></select></label>
+    <div class="row2">
+      <label>Data<input type="date" name="appointment_date" required></label>
+      <label>Ora<select name="start_time" required></select></label>
+    </div>
+    <div class="row2">
+      <label>Fascia<select name="staff"></select></label>
+      <label>Stato<select name="status">
+        <option value="confirmed">Confermato</option><option value="completed">Completato</option><option value="cancelled">Annullato</option>
+      </select></label>
+    </div>
+    <label>Nota<input name="note"></label>
+    <p class="error" id="apptErr" role="alert"></p>
+    <button class="btn btn-black btn-block">Salva</button>
+    <button type="button" class="btn btn-line btn-block" id="apptBlock">Blocca questo slot</button>
+    <button type="button" class="btn btn-line btn-block" id="apptCancel">Annulla prenotazione</button>
+    <button type="button" class="btn btn-line btn-block" data-guest-close>Continua senza account</button>
+    <button type="button" class="link" data-close>Chiudi</button>
+  </form>
+</dialog>
+
 <div id="toast" role="status" aria-live="polite"></div>
+
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
-<script src="supabase.js"></script><script src="onesignal.js"></script><script src="app.js"></script>
-</body></html>
+<script src="supabase.js"></script>
+<script src="onesignal.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
