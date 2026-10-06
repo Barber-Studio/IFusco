@@ -113,25 +113,26 @@ async function applySession(session) {
 }
 
 /* ---------- routing ---------- */
-const VIEWS = ["home", "book", "agenda", "profile"];
+const VIEWS = ["home", "book", "appointments", "agenda", "profile"];
 function currentView() { return $("[data-view]:not([hidden])")?.dataset.view; }
 function route() {
   let v = location.hash.slice(1);
   if (!VIEWS.includes(v)) v = "home";
   if (v === "agenda" && !isAdmin()) v = "home";
-  if (v === "profile" && !state.user) { openAuth("login"); v = "home"; if (location.hash !== "#home") location.hash = "#home"; }
+  if ((v === "profile" || v === "appointments") && !state.user) { openAuth("login"); v = "home"; if (location.hash !== "#home") location.hash = "#home"; }
   $$("[data-view]").forEach((s) => (s.hidden = s.dataset.view !== v));
   $$("[data-nav]").forEach((a) => a.classList.toggle("on", a.dataset.nav === v));
   window.scrollTo(0, 0);
-  ({ book: renderBook, profile: renderProfile, agenda: renderAgenda }[v] || (() => {}))();
+  ({ book: renderBook, appointments: renderAppointments, profile: renderProfile, agenda: renderAgenda }[v] || (() => {}))();
+  reveal();
 }
 
 /* ---------- servizi / home ---------- */
 async function loadServices() {
   const { data } = await db.from("services").select("*").eq("active", true).order("sort");
   state.services = data || [];
-  $("#homeServices").innerHTML = state.services.map((s) => `
-    <li class="service-row">
+  $("#homeServices").innerHTML = state.services.map((s, i) => `
+    <li class="service-row" data-reveal style="--d:${i * 90}ms">
       <h3>${esc(s.name)}</h3>
       <p>${esc(s.description)}</p>
       <div class="service-meta">${euro(s.price)}<small>${s.duration_min} min</small></div>
@@ -170,9 +171,9 @@ async function loadSlots() {
   if (error) { box.innerHTML = '<p class="error">Impossibile leggere la disponibilità.</p>'; return; }
   b.busy = data;
   const occ = occupancy(data), n = slotsNeeded(svcById(b.service).duration_min);
-  box.innerHTML = CONFIG.SLOTS.map((t) => {
+  box.innerHTML = CONFIG.SLOTS.map((t, i) => {
     const ok = !isPast(b.date, t) && freeStaff(occ, t, n) !== null;
-    return `<button class="slot" data-time="${t}" aria-pressed="false" ${ok ? "" : "disabled"}>${t}</button>`;
+    return `<button class="slot" style="--d:${i * 20}ms" data-time="${t}" aria-pressed="false" ${ok ? "" : "disabled"}>${t}</button>`;
   }).join("");
 }
 function updateSummary() {
@@ -194,28 +195,29 @@ async function confirmBooking() {
     .select().single();
   if (error) { toast(dbError(error.message)); return loadSlots(); }
   notifyAdmin("new", data.id);
-  toast("Prenotazione confermata"); b.time = null; location.hash = "#profile";
+  toast("Prenotazione confermata"); b.time = null; location.hash = "#appointments";
 }
 
 /* ---------- profilo cliente ---------- */
 const STATUS = { confirmed: "Confermato", completed: "Completato", cancelled: "Annullato" };
-async function renderProfile() {
+function renderProfile() {
   const f = $("#profileForm").elements, p = state.profile || {};
   f.nome.value = p.nome || ""; f.cognome.value = p.cognome || ""; f.telefono.value = p.telefono || "";
-  const [{ data: ap }, { data: nt }] = await Promise.all([
-    db.from("appointments").select("*, services(name)").eq("user_id", state.user.id)
-      .order("appointment_date", { ascending: false }).order("start_time", { ascending: false }),
-    db.from("notifications").select("*").order("created_at", { ascending: false }).limit(8),
-  ]);
+  db.from("notifications").select("*").order("created_at", { ascending: false }).limit(8).then(({ data }) => {
+    $("#notifList").innerHTML = (data || []).map((n) =>
+      `<li><div><b>${esc(n.title)}</b><small>${esc(n.body)}</small></div></li>`).join("");
+  });
+}
+async function renderAppointments() {
+  const { data: ap } = await db.from("appointments").select("*, services(name)").eq("user_id", state.user.id)
+    .order("appointment_date", { ascending: false }).order("start_time", { ascending: false });
   const future = (a) => a.status === "confirmed" && new Date(`${a.appointment_date}T${hhmm(a.start_time)}:00`) >= new Date();
-  const item = (a) => `<li><div><b>${esc(a.services?.name)}</b><small>${fmtDay(a.appointment_date)} · ${hhmm(a.start_time)}</small></div>
+  const item = (a, i) => `<li style="animation-delay:${i * 60}ms"><div><b>${esc(a.services?.name)}</b><small>${fmtDay(a.appointment_date)} · ${hhmm(a.start_time)}</small></div>
     <div><span class="status ${a.status}">${STATUS[a.status]}</span>
     ${future(a) ? `<button class="link" data-cancel="${a.id}">Annulla</button>` : ""}</div></li>`;
   const list = ap || [];
   $("#apNext").innerHTML = list.filter(future).reverse().map(item).join("") || '<li class="muted">Nessun appuntamento in programma.</li>';
   $("#apPast").innerHTML = list.filter((a) => !future(a)).map(item).join("") || '<li class="muted">Ancora nessuno storico.</li>';
-  $("#notifList").innerHTML = (nt || []).map((n) =>
-    `<li><div><b>${esc(n.title)}</b><small>${esc(n.body)}</small></div></li>`).join("");
 }
 async function saveProfile(e) {
   e.preventDefault(); const f = e.target.elements;
@@ -227,7 +229,7 @@ async function cancelOwn(id) {
   if (!confirm("Vuoi annullare questo appuntamento?")) return;
   const { error } = await db.rpc("cancel_my_appointment", { p_id: +id });
   if (error) return toast("Impossibile annullare.");
-  notifyAdmin("cancel", +id); toast("Appuntamento annullato"); renderProfile();
+  notifyAdmin("cancel", +id); toast("Appuntamento annullato"); renderAppointments();
 }
 
 /* ---------- agenda admin ---------- */
@@ -379,9 +381,22 @@ function bindEvents() {
   });
 }
 
+/* ---------- movimento: intro logo, comparsa allo scroll, header ---------- */
+const io = "IntersectionObserver" in window
+  ? new IntersectionObserver((es) => es.forEach((e) => { if (e.isIntersecting) { e.target.classList.add("in"); io.unobserve(e.target); } }), { threshold: 0.12 })
+  : null;
+function reveal() { $$("[data-reveal]:not(.in)").forEach((el) => (io ? io.observe(el) : el.classList.add("in"))); }
+function initMotion() {
+  try { sessionStorage.setItem("ifusco", "1"); } catch (e) { /* ok */ }
+  const sp = $("#splash");
+  setTimeout(() => sp?.remove(), 3000);
+  sp?.addEventListener("click", () => sp.remove());
+  addEventListener("scroll", () => $(".top").classList.toggle("scrolled", scrollY > 8), { passive: true });
+}
+
 /* ---------- avvio ---------- */
 async function init() {
-  bindEvents();
+  bindEvents(); initMotion();
   const { data: { session } } = await db.auth.getSession();
   await applySession(session);
   db.auth.onAuthStateChange((evt, s) => {
@@ -390,6 +405,7 @@ async function init() {
   });
   await loadServices();
   route();
+  reveal();
   // ogni minuto: gli slot appena passati si disattivano e l'agenda si aggiorna
   setInterval(() => {
     const v = currentView(), b = state.book;
