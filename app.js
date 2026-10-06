@@ -1,5 +1,5 @@
 /* ============================================================
-   IFUSCO · logica applicazione
+   I FUSCO · logica applicazione
    Sezioni: helper · disponibilita' · auth · routing · home · prenota · profilo · agenda admin · avvio
    ============================================================ */
 "use strict";
@@ -100,7 +100,7 @@ async function submitAuth(e) {
     return err(m.includes("already") ? "Numero già registrato. Usa Accedi." : m.includes("Invalid login") ? "Telefono o PIN non corretti." : "Accesso non riuscito. Riprova.");
   }
   if (!res.data.session) return err("Account creato, ma serve disattivare la conferma email in Supabase (vedi README).");
-  $("#authDlg").close(); e.target.reset(); toast(reg ? "Benvenuto in IFUSCO" : "Accesso effettuato");
+  $("#authDlg").close(); e.target.reset(); toast(reg ? "Benvenuto da I FUSCO" : "Accesso effettuato");
 }
 async function applySession(session) {
   state.user = session?.user ?? null; state.profile = null;
@@ -387,11 +387,19 @@ const io = "IntersectionObserver" in window
   : null;
 function reveal() { $$("[data-reveal]:not(.in)").forEach((el) => (io ? io.observe(el) : el.classList.add("in"))); }
 function initMotion() {
-  try { sessionStorage.setItem("ifusco", "1"); } catch (e) { /* ok */ }
   const sp = $("#splash");
-  setTimeout(() => sp?.remove(), 3000);
+  setTimeout(() => sp?.remove(), 3300);
   sp?.addEventListener("click", () => sp.remove());
-  addEventListener("scroll", () => $(".top").classList.toggle("scrolled", scrollY > 8), { passive: true });
+  addEventListener("scroll", () => {
+    $(".top").classList.toggle("scrolled", scrollY > 8);
+    const max = document.documentElement.scrollHeight - innerHeight;
+    document.documentElement.style.setProperty("--p", max > 0 ? Math.min(scrollY / max, 1) : 0); // barra di avanzamento
+  }, { passive: true });
+  $(".hero")?.addEventListener("pointermove", (e) => { // luce che segue il mouse
+    const r = e.currentTarget.getBoundingClientRect();
+    e.currentTarget.style.setProperty("--mx", `${e.clientX - r.left}px`);
+    e.currentTarget.style.setProperty("--my", `${e.clientY - r.top}px`);
+  });
 }
 
 /* ---------- avvio ---------- */

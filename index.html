@@ -3,30 +3,26 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <title>IFUSCO · Barbershop</title>
-  <meta name="description" content="IFUSCO Barbershop. Taglio, barba e cura su appuntamento. Prenota online.">
-  <meta name="theme-color" content="#ffffff">
+  <title>I FUSCO · Barbershop</title>
+  <meta name="description" content="I FUSCO Barbershop. Taglio, barba e cura su appuntamento. Prenota online.">
+  <meta name="theme-color" content="#000000">
   <link rel="manifest" href="manifest.json">
-  <link rel="icon" href="assets/icon.svg">
+  <link rel="icon" href="assets/icon-192.png">
+  <link rel="apple-touch-icon" href="assets/icon-192.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
-  <script>document.documentElement.classList.add("js");try{if(sessionStorage.getItem("ifusco"))document.documentElement.classList.add("seen")}catch(e){}</script>
+  <script>document.documentElement.classList.add("js")</script>
 </head>
 <body>
 
 <!-- ============ INTRO LOGO ============ -->
-<div class="splash" id="splash" aria-hidden="true"><div class="splash-in"><svg class="mk" viewBox="18 16 64 72" aria-hidden="true">
-<rect class="gy" style="--i:0" x="22" y="20" width="10" height="54"/>
-<rect class="gy" style="--i:1" x="42" y="20" width="10" height="54"/>
-<rect class="gx" style="--i:2" x="42" y="20" width="36" height="10"/>
-<rect class="gx" style="--i:3" x="42" y="42" width="25" height="9"/>
-<rect class="gx" style="--i:4" x="22" y="82" width="56" height="2"/></svg><p class="splash-word">IFUSCO</p><span class="splash-line"></span></div></div>
+<div class="splash" id="splash" aria-hidden="true"><div class="splash-in"><img class="splash-logo" src="assets/logo-white.png" alt=""><span class="splash-line"></span></div></div>
 
 <!-- ============ HEADER ============ -->
 <header class="top">
-  <a href="#home" class="brand" aria-label="IFUSCO"><img src="assets/logo.svg" alt="" width="34" height="34">IFUSCO</a>
+  <a href="#home" class="brand" aria-label="I FUSCO"><img src="assets/logo-white.png" alt="I FUSCO"></a>
   <nav class="top-nav" aria-label="Principale">
     <a href="#home" data-nav="home">Home</a>
     <a href="#book" data-nav="book">Prenota</a>
@@ -48,38 +44,33 @@
 <section data-view="home">
   <div class="hero">
     <div class="hero-text">
-      <p class="hero-kicker">Barbershop su appuntamento, da martedì a sabato</p>
-      <h1>IFUSCO</h1>
-      <p class="hero-claim">Linee precise, tempo dedicato, nessuna fretta. Il taglio giusto è quello che non si nota: si nota la persona.</p>
+      <h1 class="sr">I FUSCO Barbershop</h1>
+      <img class="hero-logo" src="assets/logo-white.png" alt="I FUSCO · For gentlemen, haircuts, shaves">
+      <p class="hero-claim">Taglio e barba su appuntamento, da martedì a sabato.</p>
       <div class="hero-cta">
         <a href="#book" class="btn btn-black">Prenota ora</a>
         <button class="btn btn-line" data-scroll="services">Scopri i servizi</button>
       </div>
     </div>
-    <div class="hero-visual" role="img" aria-label="Poltrona da barbiere">
-      <svg class="mk" viewBox="18 16 64 72" aria-hidden="true">
-<rect class="gy" style="--i:0" x="22" y="20" width="10" height="54"/>
-<rect class="gy" style="--i:1" x="42" y="20" width="10" height="54"/>
-<rect class="gx" style="--i:2" x="42" y="20" width="36" height="10"/>
-<rect class="gx" style="--i:3" x="42" y="42" width="25" height="9"/>
-<rect class="gx" style="--i:4" x="22" y="82" width="56" height="2"/></svg>
-      <span class="hero-side">Taglio, barba, rifinitura</span>
+    <div class="hero-visual" aria-hidden="true">
+      <svg class="ring2" viewBox="0 0 200 200"><circle cx="100" cy="100" r="95" fill="none" stroke="currentColor" stroke-width="1.4" stroke-dasharray="1 7" stroke-linecap="round"/></svg>
+      <svg class="ring" viewBox="0 0 200 200"><defs><path id="circ" d="M100,100 m-78,0 a78,78 0 1,1 156,0 a78,78 0 1,1 -156,0"/></defs>
+        <text textLength="486" lengthAdjust="spacing"><textPath href="#circ">FOR GENTLEMEN • HAIRCUTS • SHAVES • </textPath></text></svg>
+      <svg class="scissors" viewBox="0 0 100 100">
+        <g class="bladeA"><path pathLength="1" d="M36 8 L60 60"/><circle pathLength="1" cx="63" cy="72" r="10"/></g>
+        <g class="bladeB"><path pathLength="1" d="M64 8 L40 60"/><circle pathLength="1" cx="37" cy="72" r="10"/></g>
+        <circle pathLength="1" cx="50" cy="38" r="2.2"/>
+      </svg>
     </div>
   </div>
+
+  <div class="pole" aria-hidden="true"></div>
 
   <div class="marquee" aria-hidden="true"><div class="track"><span>Taglio</span><span>Barba</span><span>Rifinitura</span><span>Su appuntamento</span><span>Martedì – Sabato</span><span>Taglio</span><span>Barba</span><span>Rifinitura</span><span>Su appuntamento</span><span>Martedì – Sabato</span><span>Taglio</span><span>Barba</span><span>Rifinitura</span><span>Su appuntamento</span><span>Martedì – Sabato</span><span>Taglio</span><span>Barba</span><span>Rifinitura</span><span>Su appuntamento</span><span>Martedì – Sabato</span></div></div>
 
   <section data-reveal class="block" id="services">
     <h2>Servizi</h2>
     <ul class="service-list" id="homeServices"></ul>
-  </section>
-
-  <section data-reveal class="block split" id="shop">
-    <h2>Il barbershop</h2>
-    <div class="prose">
-      <p>IFUSCO è uno spazio pensato per chi vuole curarsi senza rumore. Due postazioni, appuntamenti da trenta minuti e un solo obiettivo: dedicarti il tempo che serve.</p>
-      <p>Lavoriamo con forbice, macchinetta e rasoio, partendo sempre da una chiacchierata su forma del viso, capelli e abitudini. Il risultato deve restare in ordine anche dopo due settimane.</p>
-    </div>
   </section>
 
   <section data-reveal class="block split" id="hours">
@@ -96,6 +87,7 @@
     <p>Scegli servizio, giorno e orario. Ci vogliono meno di un minuto.</p>
     <a href="#book" class="btn btn-white">Prenota ora</a>
   </section>
+  <div class="pole" aria-hidden="true"></div>
 </section>
 
 <!-- ============ PRENOTA ============ -->
@@ -177,7 +169,7 @@
 <!-- ============ FOOTER ============ -->
 <footer class="foot">
   <div>
-    <a href="#home" class="brand foot-brand"><img src="assets/logo.svg" alt="" width="40" height="40">IFUSCO</a>
+    <a href="#home" class="brand foot-brand" aria-label="I FUSCO"><img src="assets/logo-white.png" alt="I FUSCO"></a>
     <p>Via Esempio 1, 00000 Città (modifica in index.html)</p>
     <p><a href="tel:+390000000000">+39 000 000 0000</a></p>
   </div>
@@ -186,7 +178,7 @@
     <p><a href="https://tiktok.com/" target="_blank" rel="noopener">TikTok</a></p>
     <p><a href="#" id="privacyLink">Privacy</a></p>
   </div>
-  <p class="legal">© IFUSCO · P.IVA 00000000000 · Inserisci qui le informazioni legali.</p>
+  <p class="legal">© I FUSCO · P.IVA 00000000000 · Inserisci qui le informazioni legali.</p>
 </footer>
 </main>
 
@@ -202,6 +194,7 @@
 <!-- ============ ACCESSO / REGISTRAZIONE ============ -->
 <dialog id="authDlg">
   <form id="authForm" class="form" method="dialog">
+    <img class="dlg-logo" src="assets/logo-white.png" alt="I FUSCO">
     <div class="tabs">
       <button type="button" data-tab="login" class="on">Accedi</button>
       <button type="button" data-tab="register">Registrati</button>

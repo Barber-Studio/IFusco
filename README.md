@@ -1,4 +1,4 @@
-# IFUSCO · Barbershop
+# I FUSCO · Barbershop
 
 Sito di prenotazione in HTML, CSS e JavaScript puro. Supabase come database, OneSignal per le notifiche push. Nessun build: si pubblica su GitHub Pages così com'è.
 
@@ -18,7 +18,7 @@ Sito di prenotazione in HTML, CSS e JavaScript puro. Supabase come database, One
    `supabase secrets set ONESIGNAL_APP_ID=... ONESIGNAL_REST_API_KEY=...`
 5. **Carica la cartella su GitHub** e attiva Pages. Dal sito registrati con il tuo telefono, poi in SQL Editor:
    `update profiles set ruolo = 'admin' where telefono = '3331234567';`
-6. Facoltativo: metti una foto in `assets/hero.jpg` per la home. Il logo è `assets/logo.svg` (sostituiscilo con il tuo mantenendo lo stesso nome). Cambia indirizzo, telefono e social in `index.html`.
+6. Il logo è `assets/logo-white.png` (bianco su trasparente, ricavato dal tuo originale `logo-originale.jpg`); sostituiscilo mantenendo lo stesso nome. Cambia indirizzo, telefono e social in `index.html`.
 
 ## Come funziona
 - **Slot**: 30 minuti, due fasce parallele (due collaboratori), da martedì a sabato. Gli orari sono la lista `SLOTS` in `supabase.js`.
