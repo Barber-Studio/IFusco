@@ -52,15 +52,13 @@
         <button class="btn btn-line" data-scroll="services">Scopri i servizi</button>
       </div>
     </div>
-    <div class="hero-visual" aria-hidden="true">
-      <svg class="ring2" viewBox="0 0 200 200"><circle cx="100" cy="100" r="95" fill="none" stroke="currentColor" stroke-width="1.4" stroke-dasharray="1 7" stroke-linecap="round"/></svg>
-      <svg class="ring" viewBox="0 0 200 200"><defs><path id="circ" d="M100,100 m-78,0 a78,78 0 1,1 156,0 a78,78 0 1,1 -156,0"/></defs>
-        <text textLength="486" lengthAdjust="spacing"><textPath href="#circ">FOR GENTLEMEN • HAIRCUTS • SHAVES • </textPath></text></svg>
-      <svg class="scissors" viewBox="0 0 100 100">
-        <g class="bladeA"><path pathLength="1" d="M36 8 L60 60"/><circle pathLength="1" cx="63" cy="72" r="10"/></g>
-        <g class="bladeB"><path pathLength="1" d="M64 8 L40 60"/><circle pathLength="1" cx="37" cy="72" r="10"/></g>
-        <circle pathLength="1" cx="50" cy="38" r="2.2"/>
-      </svg>
+    <div class="hero-visual hero-static" aria-label="I FUSCO Barbershop">
+      <div class="hero-static-inner">
+        <span class="hero-static-kicker">I FUSCO · BARBERSHOP</span>
+        <strong>Taglio.<br>Barba.<br>Stile.</strong>
+        <span class="hero-static-line"></span>
+        <small>Servizi professionali e prenotazione online.</small>
+      </div>
     </div>
   </div>
 
@@ -135,18 +133,26 @@
 <section data-view="appointments" hidden>
   <div class="page">
     <h2 class="page-title">Prenotazioni</h2>
+    <div class="guest-card" id="appointmentsGuest" hidden>
+      <p>Accedi o registrati per vedere e gestire le tue prenotazioni.</p>
+      <button class="btn btn-black btn-block" data-auth="login">Accedi / Registrati</button>
+    </div><div id="appointmentsContent">
     <h3 class="sub">Prossimi appuntamenti</h3>
     <ul class="appt-list" id="apNext"></ul>
     <a href="#book" class="btn btn-black btn-block" style="margin-top:20px">Nuova prenotazione</a>
     <h3 class="sub">Storico</h3>
     <ul class="appt-list" id="apPast"></ul>
-  </div>
+  </div></div>
 </section>
 
 <!-- ============ PROFILO ============ -->
 <section data-view="profile" hidden>
   <div class="page">
     <h2 class="page-title">Profilo</h2>
+    <div class="guest-card" id="profileGuest" hidden>
+      <p>Accedi o registrati per gestire il tuo profilo.</p>
+      <button class="btn btn-black btn-block" data-auth="login">Accedi / Registrati</button>
+    </div><div id="profileContent">
     <form id="profileForm" class="form">
       <div class="row2">
         <label>Nome<input name="nome" required></label>
@@ -161,7 +167,7 @@
     <ul class="notif-list" id="notifList"></ul>
 
     <button class="btn btn-black btn-block logout" id="logoutBtn">Esci dall'account</button>
-  </div>
+  </div></div>
 </section>
 
 <!-- ============ FOOTER ============ -->
@@ -193,6 +199,7 @@
 <dialog id="authDlg">
   <form id="authForm" class="form" method="dialog">
     <img class="dlg-logo" src="assets/logo-white.png" alt="I FUSCO">
+    <p class="auth-subtitle">Accedi per prenotare e gestire il tuo profilo, oppure registrati in pochi secondi.</p>
     <div class="tabs">
       <button type="button" data-tab="login" class="on">Accedi</button>
       <button type="button" data-tab="register">Registrati</button>

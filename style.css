@@ -339,3 +339,106 @@ button,a,input,select{touch-action:manipulation}
   .slot-grid{grid-template-columns:repeat(3,1fr)}
   .revenue b{font-size:15px}
 }
+
+
+/* ============================================================
+   HOME FINALE · statico, elegante, servizi in evidenza
+   ============================================================ */
+.hero-visual.hero-static{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  min-height:340px;
+  background:#0a0a0a;
+  border:1px solid var(--g2);
+  overflow:hidden;
+}
+.hero-static-inner{
+  width:min(78%,420px);
+  padding:34px 0;
+  border-block:1px solid var(--g3);
+  display:flex;
+  flex-direction:column;
+  gap:16px;
+}
+.hero-static-kicker{
+  font:600 11px/1 var(--sans);
+  letter-spacing:.22em;
+  color:var(--g4);
+}
+.hero-static-inner strong{
+  font:400 clamp(48px,8vw,82px)/.88 var(--serif);
+  letter-spacing:-.02em;
+}
+.hero-static-line{width:54px;height:1px;background:var(--ink)}
+.hero-static-inner small{font:400 14px/1.5 var(--sans);color:var(--g4);max-width:28ch}
+
+/* niente movimenti nella Home */
+.hero::before,
+.hero-visual::before,
+.pole::before,
+.ring,.ring2,.scissors,
+.bladeA,.bladeB,
+.hero-text>*,
+[data-reveal],
+[data-view]:not([hidden]),
+.service-row,
+.btn-line,
+.slot,.pick,.day,.appt-list li,.notif-list li,.agenda-grid .cell{
+  animation:none!important;
+}
+.hero-text>*{opacity:1!important;transform:none!important}
+.js [data-reveal]{opacity:1!important;transform:none!important}
+.block h2::after{width:64px!important;transition:none!important}
+.service-row{transition:none!important}
+.btn:active{transform:none!important}
+.hero-visual{animation:none!important}
+
+/* servizi: struttura compatta tipo catalogo, mantenendo il font del sito */
+#services{background:var(--paper)}
+#services .service-list{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:10px;
+}
+#services .service-row{
+  display:flex;
+  flex-direction:column;
+  align-items:flex-start;
+  justify-content:space-between;
+  min-height:190px;
+  padding:18px;
+  border:1px solid var(--g2);
+}
+#services .service-row:first-child{border-top:1px solid var(--g2)}
+#services .service-row h3{font-size:25px}
+#services .service-row p{order:2;color:var(--g4);font-size:14px;line-height:1.45}
+#services .service-meta{
+  order:1;align-self:flex-end;margin-top:-34px;text-align:right;
+  font-family:var(--serif);font-size:25px;font-weight:400;
+}
+#services .service-meta small{font-family:var(--sans);font-size:11px}
+#services .service-row .btn{order:3;width:100%;margin-top:auto;min-height:42px}
+#services .service-row:hover{padding-left:18px}
+
+/* accesso iniziale / accesso da Profilo e Prenotazioni */
+.auth-subtitle{color:var(--g4);font-size:14px;line-height:1.45;text-align:center;margin:-2px auto 4px;max-width:34ch}
+.guest-card{
+  border:1px solid var(--g2);
+  padding:22px 18px;
+  margin-bottom:24px;
+  background:var(--g1);
+}
+.guest-card p{color:var(--g4);margin-bottom:16px}
+#profileContent,#appointmentsContent{display:block}
+
+@media (max-width:899px){
+  .hero-visual.hero-static{min-height:210px}
+  .hero-static-inner{width:78%;padding:24px 0;gap:12px}
+  .hero-static-inner strong{font-size:52px}
+  #services .service-list{grid-template-columns:1fr}
+  #services .service-row{min-height:170px}
+}
+
+/* Login nello stile dei precedenti progetti: verifica automatica al completamento del PIN. */
+#authDlg:not(.register) #authSubmit{display:none}

@@ -345,6 +345,15 @@ async function unblock(id) {
 function bindEvents() {
   window.addEventListener("hashchange", route);
   $("#authForm").addEventListener("submit", submitAuth);
+  $("#authForm").addEventListener("input", (e) => {
+    if (e.target.name === "pin" && !$("#authDlg").classList.contains("register") && /^\d{4,6}$/.test(e.target.value)) {
+      const tel = $("#authForm").elements.telefono.value.replace(/\D/g, "");
+      if (tel.length >= 6 && e.target.value.length >= 4 && !$("#authForm").dataset.autoSubmitting) {
+        $("#authForm").dataset.autoSubmitting = "1";
+        submitAuth({ preventDefault(){}, target: $("#authForm") }).finally(() => delete $("#authForm").dataset.autoSubmitting);
+      }
+    }
+  });
   $("#profileForm").addEventListener("submit", saveProfile);
   $("#apptForm").addEventListener("submit", saveAppt);
   $("#apptCancel").addEventListener("click", cancelAppt);
