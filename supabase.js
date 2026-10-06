@@ -4,8 +4,8 @@
    ============================================================ */
 const CONFIG = {
   // Chiavi PUBBLICHE (anon key). Mai inserire la service role key.
-  SUPABASE_URL: "https://INSERISCI-PROGETTO.supabase.co",
-  SUPABASE_ANON_KEY: "INSERISCI-ANON-KEY",
+  SUPABASE_URL: "https://qirrfipvnntlgutkitgf.supabase.co/rest/v1/",
+  SUPABASE_ANON_KEY: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFpcnJmaXB2bm50bGd1dGtpdGdmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTEzMTU1NTQsImV4cCI6MjEwNjg5MTU1NH0.vH4vfShPG5uXA_EAycJ5vHOl59MIOWoXNARje1_NPuI",
   ONESIGNAL_APP_ID: "INSERISCI-ONESIGNAL-APP-ID",
 
   // Login con telefono + PIN: Supabase richiede un'email, la costruiamo dal telefono (mai mostrata).
