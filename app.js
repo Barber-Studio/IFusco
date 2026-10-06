@@ -129,8 +129,9 @@ function route() {
 
 /* ---------- servizi / home ---------- */
 async function loadServices() {
-  const { data } = await db.from("services").select("*").eq("active", true).order("sort");
-  state.services = data || [];
+  const { data, error } = await db.from("services").select("*").eq("active", true).order("sort");
+  state.demo = !!error || !data?.length; // senza Supabase collegato: anteprima con servizi di esempio
+  state.services = state.demo ? CONFIG.DEMO_SERVICES : data;
   $("#homeServices").innerHTML = state.services.map((s, i) => `
     <li class="service-row" data-reveal style="--d:${i * 90}ms">
       <h3>${esc(s.name)}</h3>
@@ -166,7 +167,7 @@ async function loadSlots() {
   if (!b.service || !b.date) { box.innerHTML = '<p class="muted">Scegli prima servizio e giorno.</p>'; return; }
   box.innerHTML = '<p class="muted">Controllo disponibilità…</p>';
   const key = `${b.service}|${b.date}`;
-  const { data, error } = await db.rpc("get_busy", { p_date: b.date });
+  const { data, error } = state.demo ? { data: [], error: null } : await db.rpc("get_busy", { p_date: b.date });
   if (key !== `${b.service}|${b.date}`) return; // l'utente ha cambiato scelta nel frattempo
   if (error) { box.innerHTML = '<p class="error">Impossibile leggere la disponibilità.</p>'; return; }
   b.busy = data;
@@ -183,6 +184,7 @@ function updateSummary() {
   $("#bookBtn").disabled = !(s && b.date && b.time);
 }
 async function confirmBooking() {
+  if (state.demo) { toast("Anteprima: collega Supabase per salvare le prenotazioni."); return; }
   if (!state.user) { openAuth("login"); return; }
   const b = state.book, svc = svcById(b.service), btn = $("#bookBtn");
   btn.disabled = true;
@@ -392,8 +394,6 @@ function initMotion() {
   sp?.addEventListener("click", () => sp.remove());
   addEventListener("scroll", () => {
     $(".top").classList.toggle("scrolled", scrollY > 8);
-    const max = document.documentElement.scrollHeight - innerHeight;
-    document.documentElement.style.setProperty("--p", max > 0 ? Math.min(scrollY / max, 1) : 0); // barra di avanzamento
   }, { passive: true });
   $(".hero")?.addEventListener("pointermove", (e) => { // luce che segue il mouse
     const r = e.currentTarget.getBoundingClientRect();

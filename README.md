@@ -31,3 +31,8 @@ Sito di prenotazione in HTML, CSS e JavaScript puro. Supabase come database, One
 ## Note
 - Il PIN è 4–6 cifre; internamente viene allungato con `PIN_SUFFIX` per rispettare i 6 caratteri minimi di Supabase.
 - Per "recuperare PIN" l'admin può reimpostarlo dalla dashboard Supabase (Authentication > Users).
+
+## Se i tasti non funzionano
+- **Prenota / Accedi / Agenda restano "spenti"** finché `supabase.js` ha i valori di esempio: finché Supabase non è collegato il sito mostra i servizi di esempio e non salva nulla.
+- **Agenda non compare**: il tuo utente deve avere `ruolo = 'admin'` (comando SQL al passo 5) e devi uscire e rientrare.
+- **Notifiche non arrivano**: servono HTTPS, la funzione `notify` pubblicata e l'App ID OneSignal giusto.

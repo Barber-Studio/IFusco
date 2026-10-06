@@ -21,6 +21,19 @@ const CONFIG = {
   STAFF: [1,2],                    // due collaboratori = due fasce parallele
   STAFF_NAMES: { 1: "Fascia 1", 2: "Fascia 2" },
   BOOKING_DAYS_AHEAD: 28,
+
+  // Servizi di esempio mostrati finche' Supabase non e' collegato (anteprima). Quelli veri stanno nella tabella "services".
+  DEMO_SERVICES: [
+    { id: 1, name: "Taglio capelli", description: "Taglio a forbice o macchina, con rifinitura a rasoio.", price: 18, duration_min: 30 },
+    { id: 2, name: "Sfumatura", description: "Sfumatura alta, media o bassa, curata nei dettagli.", price: 20, duration_min: 30 },
+    { id: 3, name: "Barba", description: "Modellatura, panno caldo e rifinitura a rasoio.", price: 12, duration_min: 30 },
+    { id: 4, name: "Taglio + barba", description: "Il servizio completo in un unico appuntamento.", price: 28, duration_min: 60 },
+    { id: 5, name: "Rasatura classica", description: "Rasatura a rasoio con panno caldo e olio pre-barba.", price: 18, duration_min: 30 },
+    { id: 6, name: "Taglio ragazzo", description: "Fino a 14 anni.", price: 14, duration_min: 30 },
+    { id: 7, name: "Shampoo e styling", description: "Lavaggio, massaggio e messa in piega.", price: 10, duration_min: 30 },
+    { id: 8, name: "Colore", description: "Copertura dei capelli bianchi o colore, consulenza inclusa.", price: 25, duration_min: 60 },
+    { id: 9, name: "Pulizia viso", description: "Detersione, scrub e maschera per una pelle curata.", price: 15, duration_min: 30 },
+  ],
 };
 
 const db = window.supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_ANON_KEY);

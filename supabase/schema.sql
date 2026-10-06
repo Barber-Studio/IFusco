@@ -151,10 +151,15 @@ create policy notif_update_own on notifications for update using (user_id = auth
 
 -- ========== SERVIZI DI ESEMPIO (modificali dalla tabella services) ==========
 insert into services (name, description, price, duration_min, sort) values
- ('Taglio uomo',   'Consulenza, taglio a forbice o macchina, finitura con rasoio.', 18, 30, 1),
- ('Barba',         'Modellatura, panno caldo e rifinitura a rasoio.',               12, 30, 2),
- ('Taglio + barba','Il servizio completo, in un unico appuntamento.',               28, 60, 3),
- ('Taglio ragazzo','Fino a 14 anni.',                                               14, 30, 4);
+ ('Taglio capelli', 'Taglio a forbice o macchina, con rifinitura a rasoio.', 18, 30, 1),
+ ('Sfumatura', 'Sfumatura alta, media o bassa, curata nei dettagli.', 20, 30, 2),
+ ('Barba', 'Modellatura, panno caldo e rifinitura a rasoio.', 12, 30, 3),
+ ('Taglio + barba', 'Il servizio completo in un unico appuntamento.', 28, 60, 4),
+ ('Rasatura classica', 'Rasatura a rasoio con panno caldo e olio pre-barba.', 18, 30, 5),
+ ('Taglio ragazzo', 'Fino a 14 anni.', 14, 30, 6),
+ ('Shampoo e styling', 'Lavaggio, massaggio e messa in piega.', 10, 30, 7),
+ ('Colore', 'Copertura dei capelli bianchi o colore, consulenza inclusa.', 25, 60, 8),
+ ('Pulizia viso', 'Detersione, scrub e maschera per una pelle curata.', 15, 30, 9);
 
 -- ========== DIVENTARE ADMIN ==========
 -- Dopo esserti registrato dal sito con il tuo telefono, esegui:
