@@ -8,7 +8,7 @@ const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => [...r.querySelectorAll(s)];
 const state = {
   user: null, profile: null, services: [], customers: null,
-  book: { service: null, date: null, time: null, staff: null, busy: [] },
+  book: { service: null, date: null, time: null, staff: null, busy: [], month: new Date(new Date().getFullYear(), new Date().getMonth(), 1) },
   agDate: ymd(new Date()), ag: { appts: [], blocks: [] },
 };
 
@@ -74,6 +74,8 @@ function setAuthMode(mode) {
   $("#authDlg").classList.toggle("register", reg);
   $$("#authDlg [data-tab]").forEach((b) => b.classList.toggle("on", b.dataset.tab === mode));
   $("#authSubmit").textContent = reg ? "Crea account" : "Accedi";
+  $("#authTitle").textContent = reg ? "Crea il tuo account." : "Bentornato.";
+  $(".auth-subtitle").textContent = reg ? "Registrati per prenotare e gestire i tuoi appuntamenti." : "Accedi per prenotare e gestire i tuoi appuntamenti.";
 }
 async function submitAuth(e) {
   e.preventDefault();
@@ -118,8 +120,7 @@ function currentView() { return $("[data-view]:not([hidden])")?.dataset.view; }
 function route() {
   let v = location.hash.slice(1);
   if (!VIEWS.includes(v)) v = "home";
-  if (v === "agenda" && !isAdmin()) v = "home";
-  if ((v === "profile" || v === "appointments") && !state.user) { openAuth("login"); v = "home"; if (location.hash !== "#home") location.hash = "#home"; }
+  // Tutte le sezioni restano navigabili senza account; l'accesso viene richiesto solo quando serve.
   $$("[data-view]").forEach((s) => (s.hidden = s.dataset.view !== v));
   $$("[data-nav]").forEach((a) => a.classList.toggle("on", a.dataset.nav === v));
   window.scrollTo(0, 0);
@@ -142,25 +143,10 @@ async function loadServices() {
 }
 
 /* ---------- prenotazione cliente ---------- */
-function openDays() {
-  const now = new Date(), out = [];
-  for (let i = 0; i <= CONFIG.BOOKING_DAYS_AHEAD; i++) {
-    const d = new Date(now.getFullYear(), now.getMonth(), now.getDate() + i);
-    if (CONFIG.OPEN_DAYS.includes(d.getDay())) out.push(d);
-  }
-  return out;
-}
-function renderBook() {
-  const b = state.book;
-  $("#bookServices").innerHTML = state.services.map((s) => `
-    <button class="pick" data-service="${s.id}" aria-pressed="${b.service === s.id}">
-      <span>${esc(s.name)}<small>${s.duration_min} min</small></span><b>${euro(s.price)}</b></button>`).join("");
-  $("#bookDays").innerHTML = openDays().map((d) => `
-    <button class="day" data-date="${ymd(d)}" aria-pressed="${b.date === ymd(d)}">
-      <small>${d.toLocaleDateString("it-IT", { weekday: "short" })}</small><b>${d.getDate()}</b>
-      <small>${d.toLocaleDateString("it-IT", { month: "short" })}</small></button>`).join("");
-  loadSlots();
-}
+function bookingLimit(){const d=new Date();d.setDate(d.getDate()+CONFIG.BOOKING_DAYS_AHEAD);return d;}
+function renderBookCalendar(){const b=state.book,base=b.month,first=new Date(base.getFullYear(),base.getMonth(),1),last=new Date(base.getFullYear(),base.getMonth()+1,0);const start=(first.getDay()+6)%7,today=new Date();today.setHours(0,0,0,0),max=bookingLimit();max.setHours(23,59,59,999);$("#calTitle").textContent=first.toLocaleDateString("it-IT",{month:"long",year:"numeric"});const prev=new Date(base.getFullYear(),base.getMonth()-1,1),next=new Date(base.getFullYear(),base.getMonth()+1,1);$("#calPrev").disabled=prev<new Date(today.getFullYear(),today.getMonth(),1);$("#calNext").disabled=next>new Date(max.getFullYear(),max.getMonth(),1);const cells=[];for(let i=0;i<start;i++)cells.push('<button class="cal-day empty" type="button" tabindex="-1"></button>');for(let day=1;day<=last.getDate();day++){const d=new Date(base.getFullYear(),base.getMonth(),day),key=ymd(d),closed=!CONFIG.OPEN_DAYS.includes(d.getDay()),outside=d<today||d>max,selected=b.date===key,cls=['cal-day',closed?'closed':'available',outside?'outside':'',selected?'selected':'',key===ymd(today)?'today':''].filter(Boolean).join(' ');cells.push(`<button type="button" class="${cls}" data-date="${key}" ${closed||outside?'disabled':''}>${day}</button>`)}$("#bookCalendarGrid").innerHTML=cells.join('');}
+function renderBook(){const b=state.book;$("#bookServices").innerHTML=state.services.map(s=>`<button class="pick" data-service="${s.id}" aria-pressed="${b.service===s.id}"><span>${esc(s.name)}<small>${s.duration_min} min · ${esc(s.description||'')}</small></span><b>${euro(s.price)}</b></button>`).join('');renderBookCalendar();loadSlots();}
+
 async function loadSlots() {
   const b = state.book, box = $("#bookSlots");
   b.time = null; b.staff = null; updateSummary();
@@ -202,25 +188,8 @@ async function confirmBooking() {
 
 /* ---------- profilo cliente ---------- */
 const STATUS = { confirmed: "Confermato", completed: "Completato", cancelled: "Annullato" };
-function renderProfile() {
-  const f = $("#profileForm").elements, p = state.profile || {};
-  f.nome.value = p.nome || ""; f.cognome.value = p.cognome || ""; f.telefono.value = p.telefono || "";
-  db.from("notifications").select("*").order("created_at", { ascending: false }).limit(8).then(({ data }) => {
-    $("#notifList").innerHTML = (data || []).map((n) =>
-      `<li><div><b>${esc(n.title)}</b><small>${esc(n.body)}</small></div></li>`).join("");
-  });
-}
-async function renderAppointments() {
-  const { data: ap } = await db.from("appointments").select("*, services(name)").eq("user_id", state.user.id)
-    .order("appointment_date", { ascending: false }).order("start_time", { ascending: false });
-  const future = (a) => a.status === "confirmed" && new Date(`${a.appointment_date}T${hhmm(a.start_time)}:00`) >= new Date();
-  const item = (a, i) => `<li style="animation-delay:${i * 60}ms"><div><b>${esc(a.services?.name)}</b><small>${fmtDay(a.appointment_date)} · ${hhmm(a.start_time)}</small></div>
-    <div><span class="status ${a.status}">${STATUS[a.status]}</span>
-    ${future(a) ? `<button class="link" data-cancel="${a.id}">Annulla</button>` : ""}</div></li>`;
-  const list = ap || [];
-  $("#apNext").innerHTML = list.filter(future).reverse().map(item).join("") || '<li class="muted">Nessun appuntamento in programma.</li>';
-  $("#apPast").innerHTML = list.filter((a) => !future(a)).map(item).join("") || '<li class="muted">Ancora nessuno storico.</li>';
-}
+function renderProfile(){const guest=$("#profileGuest"),content=$("#profileContent");guest.hidden=!!state.user;content.hidden=!state.user;if(!state.user)return;const f=$("#profileForm").elements,p=state.profile||{};f.nome.value=p.nome||"";f.cognome.value=p.cognome||"";f.telefono.value=p.telefono||"";db.from("notifications").select("*").order("created_at",{ascending:false}).limit(8).then(({data})=>{$("#notifList").innerHTML=(data||[]).map(n=>`<li><div><b>${esc(n.title)}</b><small>${esc(n.body)}</small></div></li>`).join("")||'<li class="muted">Nessuna notifica.</li>'});}
+async function renderAppointments(){const guest=$("#appointmentsGuest"),content=$("#appointmentsContent");guest.hidden=!!state.user;content.hidden=!state.user;if(!state.user)return;const {data:ap}=await db.from("appointments").select("*, services(name)").eq("user_id",state.user.id).order("appointment_date",{ascending:false}).order("start_time",{ascending:false});const future=a=>a.status==="confirmed"&&new Date(`${a.appointment_date}T${hhmm(a.start_time)}:00`)>=new Date();const item=a=>`<li><div><b>${esc(a.services?.name)}</b><small>${fmtDay(a.appointment_date)} · ${hhmm(a.start_time)}</small></div><div><span class="status ${a.status}">${STATUS[a.status]}</span>${future(a)?`<button class="link" data-cancel="${a.id}">Annulla</button>`:""}</div></li>`;const list=ap||[];$("#apNext").innerHTML=list.filter(future).reverse().map(item).join("")||'<li class="muted">Nessun appuntamento in programma.</li>';$("#apPast").innerHTML=list.filter(a=>!future(a)).map(item).join("")||'<li class="muted">Ancora nessuno storico.</li>';}
 async function saveProfile(e) {
   e.preventDefault(); const f = e.target.elements;
   const { error } = await db.from("profiles").update({ nome: f.nome.value.trim(), cognome: f.cognome.value.trim() }).eq("id", state.user.id);
@@ -235,7 +204,26 @@ async function cancelOwn(id) {
 }
 
 /* ---------- agenda admin ---------- */
+async function renderPublicAgenda(){
+  $("#publicAgenda").hidden=false;$("#agendaAdmin").hidden=true;
+  const box=$("#publicAgenda");box.innerHTML='<p class="empty-note">Caricamento disponibilità…</p>';
+  const days=[],now=new Date();
+  for(let i=0;i<CONFIG.BOOKING_DAYS_AHEAD;i++){
+    const d=new Date(now.getFullYear(),now.getMonth(),now.getDate()+i);
+    if(!CONFIG.OPEN_DAYS.includes(d.getDay())) continue;
+    const key=ymd(d);
+    let busy=[];
+    if(!state.demo){ const r=await db.rpc("get_busy",{p_date:key}); busy=r.data||[]; }
+    const occ=occupancy(busy);
+    const free=CONFIG.SLOTS.filter(t=>!isPast(key,t)&&freeStaff(occ,t,1)!==null).length;
+    days.push(`<div class="public-day"><div><span class="eyebrow">${fmtDay(key,{weekday:"long",day:"numeric",month:"long"})}</span><b>${free} orari disponibili</b></div><a href="#book" class="secondary-button" data-date="${key}">Scegli questo giorno →</a></div>`);
+  }
+  box.innerHTML=days.join("")||'<p class="empty-note">Nessuna disponibilità.</p>';
+}
+
 async function renderAgenda() {
+  if(!isAdmin()) return renderPublicAgenda();
+  $("#publicAgenda").hidden=true;$("#agendaAdmin").hidden=false;
   const d = state.agDate; $("#agDate").value = d;
   const [ap, bl] = await Promise.all([
     db.from("appointments").select("*, profiles(nome,cognome,telefono), services(name)").eq("appointment_date", d).neq("status", "cancelled"),
@@ -345,20 +333,13 @@ async function unblock(id) {
 function bindEvents() {
   window.addEventListener("hashchange", route);
   $("#authForm").addEventListener("submit", submitAuth);
-  $("#authForm").addEventListener("input", (e) => {
-    if (e.target.name === "pin" && !$("#authDlg").classList.contains("register") && /^\d{4,6}$/.test(e.target.value)) {
-      const tel = $("#authForm").elements.telefono.value.replace(/\D/g, "");
-      if (tel.length >= 6 && e.target.value.length >= 4 && !$("#authForm").dataset.autoSubmitting) {
-        $("#authForm").dataset.autoSubmitting = "1";
-        submitAuth({ preventDefault(){}, target: $("#authForm") }).finally(() => delete $("#authForm").dataset.autoSubmitting);
-      }
-    }
-  });
   $("#profileForm").addEventListener("submit", saveProfile);
   $("#apptForm").addEventListener("submit", saveAppt);
   $("#apptCancel").addEventListener("click", cancelAppt);
   $("#apptBlock").addEventListener("click", blockSlot);
   $("#bookBtn").addEventListener("click", confirmBooking);
+  $("#calPrev").addEventListener("click",()=>{state.book.month=new Date(state.book.month.getFullYear(),state.book.month.getMonth()-1,1);renderBookCalendar();});
+  $("#calNext").addEventListener("click",()=>{state.book.month=new Date(state.book.month.getFullYear(),state.book.month.getMonth()+1,1);renderBookCalendar();});
   $("#pushBtn").addEventListener("click", async () => toast((await requestOneSignalNotifications()) ? "Notifiche attivate" : "Notifiche non attivate"));
   $("#bellBtn").addEventListener("click", () => { state.user ? (location.hash = "#profile", requestOneSignalNotifications()) : openAuth("login"); });
   $("#logoutBtn").addEventListener("click", async () => { await db.auth.signOut(); location.hash = "#home"; toast("Hai effettuato l'uscita"); });
@@ -373,11 +354,12 @@ function bindEvents() {
     const t = e.target.closest("button, a"); if (!t) return;
     if (t.dataset.close !== undefined) t.closest("dialog").close();
     if (t.dataset.tab) setAuthMode(t.dataset.tab);
+    if (t.dataset.auth) openAuth(t.dataset.auth);
     if (t.dataset.scroll) document.getElementById(t.dataset.scroll).scrollIntoView();
     if (t.dataset.pick) { state.book.service = +t.dataset.pick; location.hash = "#book"; }
     if (t.dataset.cancel) cancelOwn(t.dataset.cancel);
     if (t.dataset.service) { state.book.service = +t.dataset.service; renderBook(); }
-    if (t.dataset.date) { state.book.date = t.dataset.date; renderBook(); }
+    if (t.dataset.date) { state.book.date = t.dataset.date; const d=parseYmd(t.dataset.date); state.book.month=new Date(d.getFullYear(),d.getMonth(),1); renderBook(); }
     if (t.dataset.time) {
       const b = state.book, n = slotsNeeded(svcById(b.service).duration_min);
       b.time = t.dataset.time; b.staff = freeStaff(occupancy(b.busy), b.time, n);
@@ -392,24 +374,8 @@ function bindEvents() {
   });
 }
 
-/* ---------- movimento: intro logo, comparsa allo scroll, header ---------- */
-const io = "IntersectionObserver" in window
-  ? new IntersectionObserver((es) => es.forEach((e) => { if (e.isIntersecting) { e.target.classList.add("in"); io.unobserve(e.target); } }), { threshold: 0.12 })
-  : null;
-function reveal() { $$("[data-reveal]:not(.in)").forEach((el) => (io ? io.observe(el) : el.classList.add("in"))); }
-function initMotion() {
-  const sp = $("#splash");
-  setTimeout(() => sp?.remove(), 3300);
-  sp?.addEventListener("click", () => sp.remove());
-  addEventListener("scroll", () => {
-    $(".top").classList.toggle("scrolled", scrollY > 8);
-  }, { passive: true });
-  $(".hero")?.addEventListener("pointermove", (e) => { // luce che segue il mouse
-    const r = e.currentTarget.getBoundingClientRect();
-    e.currentTarget.style.setProperty("--mx", `${e.clientX - r.left}px`);
-    e.currentTarget.style.setProperty("--my", `${e.clientY - r.top}px`);
-  });
-}
+/* ---------- avvio grafico: interfaccia statica ---------- */
+function initMotion(){ /* interfaccia volutamente statica: nessuna animazione introduttiva */ }
 
 /* ---------- avvio ---------- */
 async function init() {
@@ -422,7 +388,7 @@ async function init() {
   });
   await loadServices();
   route();
-  reveal();
+  if(!state.user) setTimeout(()=>openAuth("login"),250);
   // ogni minuto: gli slot appena passati si disattivano e l'agenda si aggiorna
   setInterval(() => {
     const v = currentView(), b = state.book;

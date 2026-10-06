@@ -4,7 +4,7 @@
    ============================================================ */
 const CONFIG = {
   // Chiavi PUBBLICHE (anon key). Mai inserire la service role key.
-  SUPABASE_URL: "https://INSERISCI-PROGETTO.supabase.co",
+  SUPABASE_URL: "https://wxcdmtajcasnlohqkgmk.supabase.co",
   SUPABASE_ANON_KEY: "INSERISCI-ANON-KEY",
   ONESIGNAL_APP_ID: "INSERISCI-ONESIGNAL-APP-ID",
 
